@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cluster-manager
+  namespace: gpu
+  labels:
+    name: cluster-manager
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 31000
+    port: 80
+    targetPort: 8686
+    protocol: TCP
+  selector:
+    name: cluster-manager
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-manager
+  namespace: gpu
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cluster-manager
+  namespace: gpu
+subjects:
+- kind: ServiceAccount
+  name: cluster-manager
+  namespace: gpu
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: cluster-manager
+  name: keti-cluster-manager
+  namespace: gpu
+spec:
+  selector:
+    matchLabels:
+      name: cluster-manager
+  template:
+    metadata:
+      labels:
+        name: cluster-manager
+      name: cluster-manager
+    spec:
+      nodeName: master
+      serviceAccountName: cluster-manager
+      containers:
+        - name: cluster-manager
+          image: ketidevit2/cluster-manager:v0.14
+          ports:
+            - containerPort: 8686
+          volumeMounts:
+            - name: tz-config
+              mountPath: /etc/localtime
+            - name: config
+              mountPath: /root/.kube/  
+      volumes:
+        - name: tz-config
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Seoul
+        - name: config
+          hostPath:
+            path: /root/.kube

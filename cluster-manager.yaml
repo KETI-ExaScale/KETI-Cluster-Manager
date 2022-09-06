@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cluster-manager
+  name: keti-cluster-manager
+  namespace: gpu
+spec:
+  selector:
+    matchLabels:
+      app: cluster-manager
+  template:
+    metadata:
+      labels:
+        app: cluster-manager
+      name: cluster-manager
+    spec:
+      nodeName: master
+      serviceAccountName: cluster-manager
+      containers:
+        - name: cluster-manager
+          image: ketidevit2/cluster-manager:v2
+          volumeMounts:
+            - name: tz-config
+              mountPath: /etc/localtime
+      volumes:
+        - name: tz-config
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Seoul
+            
