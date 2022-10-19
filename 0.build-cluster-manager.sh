@@ -1,5 +1,5 @@
 registry="ketidevit2"
-imagename="cluster-manager"
+imagename="keti-cluster-manager"
 version="v0.14"
 
 #gpu-scheduler binary file

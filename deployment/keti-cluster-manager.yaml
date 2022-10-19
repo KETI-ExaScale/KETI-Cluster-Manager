@@ -19,7 +19,7 @@ spec:
       serviceAccountName: cluster-manager
       containers:
         - name: cluster-manager
-          image: ketidevit2/cluster-manager:v0.14
+          image: ketidevit2/keti-cluster-manager:v0.14
           volumeMounts:
             - name: tz-config
               mountPath: /etc/localtime
