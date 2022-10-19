@@ -24,9 +24,9 @@ Confirm that the gpu-scheduler module is installed in that namespace as follows<
 [root@master ~]# kubectl get pods -A | grep gpu-scheduler
 gpu           gpu-scheduler-66f95d7c8d-b9wwj          1/1     Running     0                      23h
 ```
-### (2) 멀티 클러스터 구성
+### (2) How to configure Multi-cluster
 1. copy the cluster config file<br> 
-Copy the config files existing in the '~/.kube/config' path of each cluster to the '~/.kube/config' path of the cluster to be joined.
+Copy the config files existing in the "~/.kube/config" path of each cluster to the "~/.kube/config" path of the cluster to be joined.
 2. Register environment variable<br>
 a. Register config file : export KUBECONFIG=\$HOME/.kube/config <br>
 b. Join cluster : export KUBECONFIG=\$KUBECONFIG:\$HOME/.kube/\$another_cluster_config_file_name (:로 덧붙이기) <br>
