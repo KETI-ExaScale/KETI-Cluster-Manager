@@ -65,7 +65,7 @@ or
 [root@master ~]# kubectl get serviceaccount -A | grep cluster-manager
 gpu               cluster-manager                      1         23h
 ```
-### (3) GPU-Scheduler 모듈 배포
+### (3) Cluster Manager 모듈 배포
 클러스터 롤바인딩, 서비스 어카운트 배포 후 클러스터 매니저 정상 동작 가능 <br>
 Cluster Manager의 클러스터 스케줄링을 위해 다음 모듈 {
 *[GPU-Scheduler](https://github.com/KETI-ExaScale/GPU-Scheduler)* }이 정상 동작하고 있어야 함

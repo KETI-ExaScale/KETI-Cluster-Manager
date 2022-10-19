@@ -1,35 +1,36 @@
 # Cluster Manager
 **Contents**
-- [1.Cluster-Manager 소개](#introduction-of-GPU-Scheduler)
-- [2.구성환경](#environment)
-- [3.설치순서](#install-step)
+- [1.Introduction-of-Cluster-Manager](#1introduction-of-cluster-manager)
+- [2.Environment](#2environment)
+- [3.Installation](#3installation)
 ----
-## 1.Cluster-Manager 소개 
-쿠버네티스 멀티 클러스터 환경 기반 접속 클러스터 제한 없는 클러스터간 스케줄링을 지원하는 모듈<br>
-조인 클러스터의 노드 점수를 유지하여 GPU Scheduler의 클러스터 스케줄링을 돕는다.
-#### 제공기능
-- GPU Scheduler 요청 시 최적 클러스터 선정
-#### 필요모듈
+## 1.Introduction of Cluster Manager
+A module that supports multi-cluster scheduling without limiting access clusters based on a Kubernetes multi-cluster environment.<br>
+It helps the GPU Scheduler's cluster scheduling by maintaining the node score of the joined cluster.
+#### Main Function
+- Select the optimal cluster when requested by the GPU Scheduler
+#### Required Module
 - *[GPU-Scheduler](https://github.com/KETI-ExaScale/GPU-Scheduler)*
 ---
-## 2.구성환경
-모듈 설치는 다음과 같은 환경에서 구성되어야 한다.<br>
-### (1) 사전 설치 모듈
-GPU Scheduler와 함께 동작하기 때문에 GPU Scheduler와 동일 환경에서 동작하며<br>
-GPU Scheduler의 구성이 정상적으로 이루어져야 Cluster Manager의 동작이 가능하다.<br>
+## 2.Environment
+Module installation should be configured in the following environment<br>
+### (1) Pre Installed Modules
+Because it works with GPU Scheduler, it operates in the same environment as GPU Scheduler<br>
+The operation of Cluster Manager is possible only when the configuration of GPU Scheduler is successful.<br>
 
-클러스터 내에 'gpu' 네임스페이스가 존재하며 해당 네임스페이스에 gpu-scheduler 모듈이 설치되어 있음을 다음과 같이 확인<br>
+The 'gpu' namespace exists in the cluster and
+Confirm that the gpu-scheduler module is installed in that namespace as follows<br>
 ```
 [root@master ~]# kubectl get pods -A | grep gpu-scheduler
 gpu           gpu-scheduler-66f95d7c8d-b9wwj          1/1     Running     0                      23h
 ```
 ### (2) 멀티 클러스터 구성
-1. config 파일 복사<br> 
-각 클러스터의 '~/.kube/config' 경로에 존재하는 config 파일을 조인할 클러스터의 '~/.kube/config' 경로에 서로 복사한다
-2. 환경변수 등록<br>
-a. 컨피그 파일 등록 : export KUBECONFIG=\$HOME/.kube/config <br>
-b. 클러스터 조인 : export KUBECONFIG=\$KUBECONFIG:\$HOME/.kube/\$상대컨피그네임 (:로 덧붙이기) <br>
-클러스터가 정상적으로 조인되었음을 다음과 같이 확인
+1. copy the cluster config file<br> 
+Copy the config files existing in the '~/.kube/config' path of each cluster to the '~/.kube/config' path of the cluster to be joined.
+2. Register environment variable<br>
+a. Register config file : export KUBECONFIG=\$HOME/.kube/config <br>
+b. Join cluster : export KUBECONFIG=\$KUBECONFIG:\$HOME/.kube/\$another_cluster_config_file_name (:로 덧붙이기) <br>
+Confirm that the cluster is successfully joined as follows
 ```
 [root@master ~]# kubectl config get-clusters
 NAME
@@ -37,46 +38,45 @@ keti-gpu-cluster1
 keti-gpu-cluster2
 ```
 ---
-## 3.설치순서
-### (1) Service 등록
-외부 클러스터에서 해당 모듈에 접근할 수 있도록 {cluster-manager-service.yaml} 배포
+## 3.Installation
+### (1) Set Service
+Deploy {cluster-manager-service.yaml} so that the module can be accessed from external clusters
 ```
-[service yaml 배포]
+[creates service yaml]
 # kubectl create -f cluster-manager-service.yaml
 or
-[service 쉘스크립트 실행]
+[run service script]
 # ./1.service-cluster-manager.sh
 ```
 ```
 [root@master ~]# kubectl get service -A | grep cluster-manager
 gpu           cluster-manager          NodePort       10.96.52.12      <none>        80:31000/TCP             23h
 ```
-### (2) Cluster rbac 설정
-Cluster Manaer 모듈에 권한부여를 위한 {role-binding.yaml / service-account.yaml} 배포
+### (2) Set Cluster rbac
+Deploy {role-binding.yaml / service-account.yaml} for authorization to Cluster Manager module
 ```
-[rbac yaml 배포]
+[create rbac yaml]
 # kubectl create -f rbac/role-binding.yaml
 # kubectl create -f rbac/service-account.yaml
 or
-[rbac 쉘스크립트 실행]
+[run rbac script]
 # ./2.rbac-gpucluster-manager.sh
 ```
 ```
 [root@master ~]# kubectl get serviceaccount -A | grep cluster-manager
 gpu               cluster-manager                      1         23h
 ```
-### (3) GPU-Scheduler 모듈 배포
-클러스터 롤바인딩, 서비스 어카운트 배포 후 클러스터 매니저 정상 동작 가능 <br>
-Cluster Manager의 클러스터 스케줄링을 위해 다음 모듈 {
-*[GPU-Scheduler](https://github.com/KETI-ExaScale/GPU-Scheduler)* }이 정상 동작하고 있어야 함
+### (3) Create Cluster Manager
+After cluster roll binding and service account deployment, the cluster manager can operate successfully <br>
+For cluster scheduling of Cluster Manager, the following module {*[GPU-Scheduler](https://github.com/KETI-ExaScale/GPU-Scheduler)* } must be operating successfully.
 ```
-[cluster manager yaml 배포]
+[create cluster manager yaml]
 # kubectl apply -f cluster-manager.yaml
 or
-[cluster manager 쉘스크립트 실행]
+[run cluster manager script]
 # ./3.create-cluster-manager.sh
 ```
-최종적으로 다음과 같은 모듈 4개가 Running 상태일 때 정상 스케줄링 가능
+Finally, normal scheduling is possible when the following 4 modules are in the Running state.
 ```
 [root@master ~]# k get po -n gpu
 NAME                                    READY   STATUS    RESTARTS      AGE
@@ -86,8 +86,8 @@ keti-cluster-manager-57489c8ddc-sqrx2   1/1     Running   0             23h
 keti-gpu-device-plugin-lg7jx            2/2     Running   3 (22d ago)   22d
 keti-gpu-metric-collector-rtd2s         1/1     Running   44 (8h ago)   19d
 ```
-### (5) 클러스터 스케줄링 수행
-+ Pod yaml에 Cluster명을 지정하는 경우 metadata > annotation > clusterName에 클러스터명 지정된 클러스터에 정상 배포
+### (5) Cluster Scheduling
++ When specifying the cluster name in the pod yaml, specify the cluster name in metadata > annotation > clusterName and deploy successfully to the specified cluster.
 ```
    apiVersion: batch/v1
     kind: Job
@@ -125,7 +125,7 @@ keti-gpu-metric-collector-rtd2s         1/1     Running   44 (8h ago)   19d
                 path: /tmp/nvidia-mps
         restartPolicy: Never
 ```
-+ Pod yaml에 Cluster명을 지정하지 않는 경우 클러스터 스케줄링 수행 후 결과 반환
++ If the cluster name is not specified in the pod yaml, the result is returned after performing cluster scheduling.
 ```
 [root@master ~]# kubectl logs keti-cluster-manager-57489c8ddc-sqrx2 -n gpu
 #Request Cluster Scheduling Called
