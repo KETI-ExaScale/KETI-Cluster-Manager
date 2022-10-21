@@ -37,7 +37,7 @@ func findKubeConfig() (string, error) {
 		fmt.Println("check1", env)
 		return env, nil
 	}
-	//나중엔 config에 하나로 합치기!!
+	//나중엔 config에 하나로 합치기!
 	path, err := homedir.Expand("/root/.kube")
 	if err != nil {
 		fmt.Println("check2", path)
