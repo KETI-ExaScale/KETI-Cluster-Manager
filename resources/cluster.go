@@ -67,7 +67,8 @@ type ClusterInfo struct {
 	Clientset    *kubernetes.Clientset
 	ClusterIP    string
 	NodeInfoList map[string]*NodeInfo
-	Avaliable    bool
+	Avaliable    bool //해당 클러스터의 점수 초기화 여부
+	Initialized  bool //해당 클러스터에 내 클러스터 점수 초기화 여부
 }
 
 func NewClusterInfo() *ClusterInfo {
@@ -77,6 +78,7 @@ func NewClusterInfo() *ClusterInfo {
 		ClusterIP:    "",
 		NodeInfoList: make(map[string]*NodeInfo),
 		Avaliable:    false,
+		Initialized:  false,
 	}
 }
 
@@ -189,10 +191,11 @@ func (cm *ClusterManager) DumpCache() {
 	for clustername, clusterinfo := range cm.ClusterInfoList {
 		fmt.Println("--")
 		fmt.Println("1. cluster name: ", clustername)
-		fmt.Println("2. cluster available", clusterinfo.Avaliable)
-		fmt.Println("3. cluster ip", clusterinfo.ClusterIP)
+		fmt.Println("2. cluster ip", clusterinfo.ClusterIP)
+		fmt.Println("3. cluster available", clusterinfo.Avaliable)
+		fmt.Println("4. cluster initialized", clusterinfo.Initialized)
 		for nodename, nodeinfo := range clusterinfo.NodeInfoList {
-			fmt.Print("*4. node name: ", nodename)
+			fmt.Print("*5. node name: ", nodename)
 			fmt.Print(" | node gpu count: ", nodeinfo.GPUCount)
 			fmt.Println(" | node score: ", nodeinfo.NodeScore)
 		}
