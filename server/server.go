@@ -79,37 +79,37 @@ func (s *ClusterServer) InitMyCluster(ctx context.Context, req *pb.InitMyCluster
 	//Init Other Cluster
 	for name, cluster := range resource.KetiClusterManager.ClusterInfoList {
 		if name != mycluster {
-			fmt.Println("#Init Other Cluster-", name)
-			host := cluster.ClusterIP + ":" + nodePort
-			conn, err := grpc.Dial(host, grpc.WithInsecure())
-			if err != nil {
-				fmt.Println("<error> Init Other Cluster Connection - ", err)
-				continue
-			}
-			defer conn.Close()
-
-			grpcClient := pb.NewClusterClient(conn)
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
-
-			// InitOtherClusterRequest 구성
-			var initOtherClusterRequest = &pb.InitOtherClusterRequest{
-				ClusterName:    mycluster,
-				RequestMessage: requestMessage,
-			}
-
-			flag, err := grpcClient.InitOtherCluster(ctx, initOtherClusterRequest)
-			if err != nil {
-				cancel()
-				fmt.Println("cluster {", name, "} doesn't have cluster manager")
-				continue
-			} else if !flag.Success {
-				cancel()
-				fmt.Println("<error> Init Other Cluster Call - ", err)
-				continue
-			}
-
-			cluster.Initialized = true
+			// //다른 모든 클러스터로 나의 Init Node Score 전달
+			ctx_, cancel := context.WithTimeout(context.Background(), time.Second*15)
+			s.CallInitOtherCluster(ctx_, cluster, requestMessage)
 			cancel()
+			// fmt.Println("#Init Other Cluster-", name)
+			// host := cluster.ClusterIP + ":" + nodePort
+			// conn, err := grpc.Dial(host, grpc.WithInsecure())
+			// if err != nil {
+			// 	fmt.Println("<error> Init Other Cluster Connection - ", err)
+			// 	continue
+			// }
+			// defer conn.Close()
+
+			// grpcClient := pb.NewClusterClient(conn)
+			// ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+
+			// // InitOtherClusterRequest 구성
+			// var initOtherClusterRequest = &pb.InitOtherClusterRequest{
+			// 	ClusterName:    mycluster,
+			// 	RequestMessage: requestMessage,
+			// }
+
+			// flag, err := grpcClient.InitOtherCluster(ctx, initOtherClusterRequest)
+			// if err != nil {
+			// 	fmt.Println("cluster {", name, "} doesn't have cluster manager")
+			// } else if !flag.Success {
+			// 	fmt.Println("<error> Init Other Cluster Call - ", err)
+			// } else {
+			// 	cluster.Initialized = true
+			// }
+			// cancel()
 		}
 	}
 	resource.KetiClusterManager.DumpCache() //확인용
@@ -140,18 +140,8 @@ func (s *ClusterServer) InitOtherCluster(ctx context.Context, req *pb.InitOtherC
 
 	myCluster := resource.KetiClusterManager.ClusterInfoList[resource.KetiClusterManager.MyClusterName]
 	if myCluster.Avaliable && !targetCluster.Initialized {
-		//해당 클러스터로 나의 Init Node Score 정보 전달
-		fmt.Println("#Init Other Cluster-", req.ClusterName)
-		host := targetCluster.ClusterIP + ":" + nodePort
-		conn, err := grpc.Dial(host, grpc.WithInsecure())
-		if err != nil {
-			fmt.Println("<error> Init Other Cluster Connection - ", err)
-		}
-		defer conn.Close()
-
-		grpcClient := pb.NewClusterClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
-
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*15)
+		// InitOtherClusterRequest 구성
 		var requestMessageList []*pb.RequestMessage
 		for _, nodeinfo := range myCluster.NodeInfoList {
 			var requestMessage = &pb.RequestMessage{
@@ -161,23 +151,45 @@ func (s *ClusterServer) InitOtherCluster(ctx context.Context, req *pb.InitOtherC
 			}
 			requestMessageList = append(requestMessageList, requestMessage)
 		}
-
-		// InitOtherClusterRequest 구성
-		var initOtherClusterRequest = &pb.InitOtherClusterRequest{
-			ClusterName:    resource.KetiClusterManager.MyClusterName,
-			RequestMessage: requestMessageList,
-		}
-
-		flag, err := grpcClient.InitOtherCluster(ctx, initOtherClusterRequest)
-		if err != nil {
-			fmt.Println(err)
-			fmt.Println("cluster {", req.ClusterName, "} doesn't have cluster manager")
-		} else if !flag.Success {
-			fmt.Println("<error> Init Other Cluster Call - ", err)
-		} else {
-			targetCluster.Initialized = true
-		}
+		s.CallInitOtherCluster(ctx_, targetCluster, requestMessageList)
 		cancel()
+		// //해당 클러스터로 나의 Init Node Score 정보 전달
+		// fmt.Println("#Init Other Cluster-", req.ClusterName)
+		// host := targetCluster.ClusterIP + ":" + nodePort
+		// conn, err := grpc.Dial(host, grpc.WithInsecure())
+		// if err != nil {
+		// 	fmt.Println("<error> Init Other Cluster Connection - ", err)
+		// }
+		// defer conn.Close()
+
+		// grpcClient := pb.NewClusterClient(conn)
+		// ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+
+		// // InitOtherClusterRequest 구성
+		// var requestMessageList []*pb.RequestMessage
+		// for _, nodeinfo := range myCluster.NodeInfoList {
+		// 	var requestMessage = &pb.RequestMessage{
+		// 		NodeName:  nodeinfo.NodeName,
+		// 		NodeScore: nodeinfo.NodeScore,
+		// 		GpuCount:  nodeinfo.GPUCount,
+		// 	}
+		// 	requestMessageList = append(requestMessageList, requestMessage)
+		// }
+		// var initOtherClusterRequest = &pb.InitOtherClusterRequest{
+		// 	ClusterName:    resource.KetiClusterManager.MyClusterName,
+		// 	RequestMessage: requestMessageList,
+		// }
+
+		// flag, err := grpcClient.InitOtherCluster(ctx, initOtherClusterRequest)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	fmt.Println("cluster {", req.ClusterName, "} doesn't have cluster manager")
+		// } else if !flag.Success {
+		// 	fmt.Println("<error> Init Other Cluster Call - ", err)
+		// } else {
+		// 	targetCluster.Initialized = true
+		// }
+		// cancel()
 	}
 	resource.KetiClusterManager.DumpCache() //확인용
 
@@ -186,6 +198,35 @@ func (s *ClusterServer) InitOtherCluster(ctx context.Context, req *pb.InitOtherC
 	return &pb.ResponseMessage{
 		Success: true,
 	}, nil
+}
+
+func (s *ClusterServer) CallInitOtherCluster(ctx context.Context, targetCluster *resource.ClusterInfo, requestMessage []*pb.RequestMessage) {
+	//해당 클러스터로 나의 Init Node Score 정보 전달
+	fmt.Println("#Call Init Other Cluster-", targetCluster.ClusterName)
+	host := targetCluster.ClusterIP + ":" + nodePort
+	conn, err := grpc.Dial(host, grpc.WithInsecure())
+	if err != nil {
+		fmt.Println("<error> Init Other Cluster Connection - ", err)
+	}
+	defer conn.Close()
+
+	grpcClient := pb.NewClusterClient(conn)
+
+	// InitOtherClusterRequest 구성
+	var initOtherClusterRequest = &pb.InitOtherClusterRequest{
+		ClusterName:    resource.KetiClusterManager.MyClusterName,
+		RequestMessage: requestMessage,
+	}
+
+	flag, err := grpcClient.InitOtherCluster(ctx, initOtherClusterRequest)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("cluster {", targetCluster.ClusterName, "} dosen't have cluster manager")
+	} else if !flag.Success {
+		fmt.Println("<error> Init Other Cluster Call - ", err)
+	} else {
+		targetCluster.Initialized = true
+	}
 }
 
 func (s *ClusterServer) UpdateMyCluster(ctx context.Context, req *pb.UpdateMyClusterRequest) (*pb.ResponseMessage, error) {

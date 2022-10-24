@@ -63,6 +63,7 @@ func (cm *ClusterManager) UnWLockCM() {
 }
 
 type ClusterInfo struct {
+	ClusterName  string
 	Config       *rest.Config
 	Clientset    *kubernetes.Clientset
 	ClusterIP    string
@@ -73,6 +74,7 @@ type ClusterInfo struct {
 
 func NewClusterInfo() *ClusterInfo {
 	return &ClusterInfo{
+		ClusterName:  "",
 		Config:       nil,
 		Clientset:    nil,
 		ClusterIP:    "",
@@ -173,6 +175,7 @@ func (cm *ClusterManager) InitClusterManager() error { //컨피그맵 읽고 cre
 			ip := strings.TrimLeft(cluster.Server, trimPostfix)
 			ipSlice := strings.Split(ip, ":")
 			clusterInfo.ClusterIP = ipSlice[0]
+			clusterInfo.ClusterName = name
 
 			cm.ClusterInfoList[name] = clusterInfo
 			fmt.Println("cluster name: ", name)
@@ -196,8 +199,8 @@ func (cm *ClusterManager) DumpCache() {
 		fmt.Println("4. cluster initialized", clusterinfo.Initialized)
 		for nodename, nodeinfo := range clusterinfo.NodeInfoList {
 			fmt.Print("*5. node name: ", nodename)
-			fmt.Print(" | node gpu count: ", nodeinfo.GPUCount)
-			fmt.Println(" | node score: ", nodeinfo.NodeScore)
+			fmt.Print(" | node score: ", nodeinfo.NodeScore)
+			fmt.Println(" | node gpu count: ", nodeinfo.GPUCount)
 		}
 	}
 }
