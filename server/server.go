@@ -170,6 +170,7 @@ func (s *ClusterServer) InitOtherCluster(ctx context.Context, req *pb.InitOtherC
 
 		flag, err := grpcClient.InitOtherCluster(ctx, initOtherClusterRequest)
 		if err != nil {
+			fmt.Println(err)
 			fmt.Println("cluster {", req.ClusterName, "} doesn't have cluster manager")
 		} else if !flag.Success {
 			fmt.Println("<error> Init Other Cluster Call - ", err)

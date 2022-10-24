@@ -187,7 +187,7 @@ func (cm *ClusterManager) InitClusterManager() error { //컨피그맵 읽고 cre
 }
 
 func (cm *ClusterManager) DumpCache() {
-	fmt.Println("#Dump Cluster Manger Cache")
+	fmt.Println("#Dump Cluster Manager Cache")
 	for clustername, clusterinfo := range cm.ClusterInfoList {
 		fmt.Println("--")
 		fmt.Println("1. cluster name: ", clustername)
