@@ -125,7 +125,7 @@ func (s *ClusterServer) InitOtherCluster(ctx context.Context, req *pb.InitOtherC
 	resource.KetiClusterManager.WLockCM()
 
 	targetCluster := resource.KetiClusterManager.ClusterInfoList[req.ClusterName]
-	fmt.Println("#Init Other Cluster-", targetCluster)
+	fmt.Println("#Init Other Cluster Called-", req.ClusterName)
 
 	for _, message := range req.RequestMessage {
 		nodeName := message.NodeName
