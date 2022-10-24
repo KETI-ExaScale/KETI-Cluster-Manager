@@ -92,6 +92,8 @@ func (s *ClusterServer) InitMyCluster(ctx context.Context, req *pb.InitMyCluster
 			grpcClient := pb.NewClusterClient(conn)
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 
+			if(cluster.Avaliable)
+
 			// InitOtherClusterRequest 구성
 			var initOtherClusterRequest = &pb.InitOtherClusterRequest{
 				ClusterName:    mycluster,
@@ -109,7 +111,7 @@ func (s *ClusterServer) InitMyCluster(ctx context.Context, req *pb.InitMyCluster
 				continue
 			}
 
-			cluster.Avaliable = true
+			// cluster.Avaliable = true
 
 			cancel()
 
