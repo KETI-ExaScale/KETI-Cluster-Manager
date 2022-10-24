@@ -75,7 +75,6 @@ func (s *ClusterServer) InitMyCluster(ctx context.Context, req *pb.InitMyCluster
 
 	resource.KetiClusterManager.ClusterInfoList[mycluster].Avaliable = true
 	resource.KetiClusterManager.ClusterInfoList[mycluster].Initialized = true
-	resource.KetiClusterManager.DumpCache() //확인용
 
 	//Init Other Cluster
 	for name, cluster := range resource.KetiClusterManager.ClusterInfoList {
@@ -113,6 +112,7 @@ func (s *ClusterServer) InitMyCluster(ctx context.Context, req *pb.InitMyCluster
 			cancel()
 		}
 	}
+	resource.KetiClusterManager.DumpCache() //확인용
 
 	resource.KetiClusterManager.UnWLockCM()
 
