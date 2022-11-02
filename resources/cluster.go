@@ -34,13 +34,11 @@ func NewClusterManager() *ClusterManager {
 func findKubeConfig() (string, error) {
 	env := os.Getenv("KUBECONFIG")
 	if env != "" {
-		fmt.Println("check1", env)
 		return env, nil
 	}
 	//나중엔 config에 하나로 합치기!
 	path, err := homedir.Expand("/root/.kube")
 	if err != nil {
-		fmt.Println("check2", path)
 		return "", err
 	}
 	return path, nil
@@ -116,27 +114,26 @@ func NewNodeInfo(name string, score int64, gpu int64) *NodeInfo {
 // }
 
 func (cm *ClusterManager) InitClusterManager() error { //컨피그맵 읽고 create할 수 있도록
+	KETI_LOG_L2("\n#Init Cluster Manager")
 	kubeConfigPath, err := findKubeConfig()
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
-	fmt.Println("kubeConfigPath: ", kubeConfigPath)
 
 	files, err := ioutil.ReadDir(kubeConfigPath)
 	if err != nil {
-		fmt.Println("<error> Read Kubeconfig Path error-", err)
+		KETI_LOG_L3(fmt.Sprintf("<error> Read Kubeconfig Path error-%s", err))
 	}
 
-	for _, file := range files {
+	for num, file := range files {
 		if file.Name() == "cache" {
 			continue
 		}
 
 		kubeConfigPath_ := ""
-		fmt.Println("filename:", file.Name())
 		kubeConfigPath_ = fmt.Sprintf("%v/%v", kubeConfigPath, file.Name())
-		fmt.Println("path:", kubeConfigPath_)
+		KETI_LOG_L1(fmt.Sprintf("%d-1. path:%s", num, kubeConfigPath_))
 
 		kubeConfig, err := clientcmd.LoadFromFile(kubeConfigPath_)
 		if err != nil {
@@ -157,14 +154,14 @@ func (cm *ClusterManager) InitClusterManager() error { //컨피그맵 읽고 cre
 
 			config, err := clientcmd.BuildConfigFromFlags(cluster.Server, kubeConfigPath_)
 			if err != nil {
-				fmt.Println("<error> ", err)
+				KETI_LOG_L3(fmt.Sprintf("<error> %s", err))
 				cm.ClusterInfoList[name] = clusterInfo
 				return err
 			}
 
 			clientset, err := kubernetes.NewForConfig(config)
 			if err != nil {
-				fmt.Println("<error> ", err)
+				KETI_LOG_L3(fmt.Sprintf("<error> %s", err))
 				clusterInfo.Config = config
 				cm.ClusterInfoList[name] = clusterInfo
 				return err
@@ -178,9 +175,8 @@ func (cm *ClusterManager) InitClusterManager() error { //컨피그맵 읽고 cre
 			clusterInfo.ClusterName = name
 
 			cm.ClusterInfoList[name] = clusterInfo
-			fmt.Println("cluster name: ", name)
-			fmt.Println("-ClusterIP ", clusterInfo.ClusterIP)
-			fmt.Println("---")
+			KETI_LOG_L1(fmt.Sprintf("%d-2. cluster name: %s", num, name))
+			KETI_LOG_L1(fmt.Sprintf("%d-3. cluster ip: %s", num, clusterInfo.ClusterIP))
 		}
 	}
 
@@ -190,18 +186,19 @@ func (cm *ClusterManager) InitClusterManager() error { //컨피그맵 읽고 cre
 }
 
 func (cm *ClusterManager) DumpCache() {
-	fmt.Println("#Dump Cluster Manager Cache")
+	KETI_LOG_L1("\n#Dump Cluster Manager Cache")
+	num := 1
 	for clustername, clusterinfo := range cm.ClusterInfoList {
-		fmt.Println("--")
-		fmt.Println("1. cluster name: ", clustername)
-		fmt.Println("2. cluster ip", clusterinfo.ClusterIP)
-		fmt.Println("3. cluster available", clusterinfo.Avaliable)
-		fmt.Println("4. cluster initialized", clusterinfo.Initialized)
+		KETI_LOG_L1(fmt.Sprintf("%d-1. cluster name: %s", num, clustername))
+		KETI_LOG_L1(fmt.Sprintf("%d-2. cluster ip : %s", num, clusterinfo.ClusterIP))
+		KETI_LOG_L1(fmt.Sprintf("%d-3. cluster available: %v", num, clusterinfo.Avaliable))
+		KETI_LOG_L1(fmt.Sprintf("%d-4. cluster initialized: %v", num, clusterinfo.Initialized))
+		num2 := 1
 		for nodename, nodeinfo := range clusterinfo.NodeInfoList {
-			fmt.Print("*5. node name: ", nodename)
-			fmt.Print(" | node score: ", nodeinfo.NodeScore)
-			fmt.Println(" | node gpu count: ", nodeinfo.GPUCount)
+			KETI_LOG_L1(fmt.Sprintf("%d-5-%d. node name: %s | node score: %d | node gpu count: %d", num, num2, nodename, nodeinfo.NodeScore, nodeinfo.GPUCount))
+			num2++
 		}
+		num++
 	}
 }
 

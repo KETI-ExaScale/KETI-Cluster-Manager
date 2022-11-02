@@ -2,7 +2,6 @@ package scheduling
 
 import (
 	resource "cluster-manager/resources"
-	"fmt"
 	"math"
 )
 
@@ -16,7 +15,6 @@ func FindCluster(gpu int, filtered []string) BestCluster {
 
 	for name, cinfo := range resource.KetiClusterManager.ClusterInfoList {
 		if cinfo.Avaliable && !isFilteredCluster(name, filtered) {
-			fmt.Println("--Cluster Name: ", name)
 			clusterScore := calcClusterScore(gpu, cinfo)
 
 			if clusterScore > bestCluster.Score {
@@ -56,7 +54,6 @@ func calcClusterScore(gpu int, cinfo *resource.ClusterInfo) int64 {
 	}
 	std = math.Sqrt(std / float64(cnt))
 	clusterScore = mean + int64(std)
-	fmt.Println("---clusterScore:", clusterScore)
 
 	// if gpu == 1 { //node 요청개수 1개
 	// 	for i := 0; i < cnt; i++ {
