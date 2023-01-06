@@ -1,7 +1,7 @@
 name: Backup
 on:
   push:
-    branches: [ gRPC ]	
+    branches: [ main ]	
 jobs:
   build:
     runs-on: backup
@@ -10,5 +10,5 @@ jobs:
     - name: pullAll
       run: |
           git fetch --all
-          git reset --hard origin/gRPC
-          git pull origin gRPC
+          git reset --hard origin/main
+          git pull origin main
