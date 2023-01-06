@@ -1,0 +1,14 @@
+name: Backup
+on:
+  push:
+    branches: [ gRPC ]	
+jobs:
+  build:
+    runs-on: backup
+    steps:
+    - uses: actions/checkout@v3
+    - name: pullAll
+      run: |
+          git fetch --all
+          git reset --hard origin/gRPC
+          git pull origin gRPC
