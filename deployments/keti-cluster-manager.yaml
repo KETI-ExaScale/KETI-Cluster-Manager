@@ -54,7 +54,7 @@ spec:
         name: cluster-manager
       name: cluster-manager
     spec:
-      nodeName: master
+      nodeName: c1-master
       serviceAccountName: cluster-manager
       containers:
         - name: cluster-manager
