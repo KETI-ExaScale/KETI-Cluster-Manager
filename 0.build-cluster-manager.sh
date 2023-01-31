@@ -1,6 +1,7 @@
-registry="ketidevit2"
-imagename="keti-cluster-manager"
-version="v0.23"
+registry="ketidevit3"
+imagename="Exascale-keti-cluster-manager"
+version="v0.1"
+# version="v0.23"
 
 #gpu-scheduler binary file
 go build -a --ldflags '-extldflags "-static"' -tags netgo -installsuffix netgo . && \
